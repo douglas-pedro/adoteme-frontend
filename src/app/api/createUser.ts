@@ -17,6 +17,7 @@ export interface CreateUserPayload {
   responsibleName: string
   state: string
   type: string
+  cnpj?: string
 }
 
 export const createUser = async (data: CreateUserPayload) => {

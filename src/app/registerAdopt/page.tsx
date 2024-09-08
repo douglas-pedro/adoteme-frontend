@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import Input from '../components/Input'
 import Button from '../components/Button'
@@ -9,7 +9,11 @@ import ModalConfirmeCode from '../components/ModalConfirmeCode'
 import Logo from '../../../public/img/logo.png'
 import { createUser, CreateUserPayload } from '../api/createUser'
 
-export default function RegisterAdot() {
+interface RegisterAdotProps {
+  type: 'adopt' | 'donatperson' | 'donatebussines'
+}
+
+export default function RegisterAdot({ type }: RegisterAdotProps) {
   const [formData, setFormData] = useState<CreateUserPayload>({
     username: '',
     name: '',
@@ -26,10 +30,13 @@ export default function RegisterAdot() {
     phone: '',
     responsibleName: '',
     state: '',
-    type: 'adopt',
+    type,
+    cnpj: '', // Adicionar cnpj aqui
   })
   const [idUser, setIdUser] = useState<string | null>(null)
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false)
+  const searchParams = useSearchParams()
+  const typeForm = searchParams.get('type')
   const router = useRouter()
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -81,11 +88,9 @@ export default function RegisterAdot() {
       )
 
       if (response.ok) {
-        // Verifica se o status da resposta é 200
         const result = await response.json()
         console.log('User confirmed successfully:', result)
         setIsModalOpen(false)
-        router.push('/signin') // Redireciona para a página de login
       } else {
         throw new Error('Failed to confirm code')
       }
@@ -95,142 +100,156 @@ export default function RegisterAdot() {
   }
 
   return (
-    <main className="flex flex-col justify-center items-center mt-[-5px]">
-      <Image alt="logo" src={Logo} />
-      <div className="mt-4">
-        <Input
-          placeholder="Nome Completo"
-          type="text"
-          name="name"
-          value={formData.name}
-          onChange={handleChange}
-          className="bg-purple-500 font-bold"
-        />
+    <main className="flex flex-col justify-center items-center h-screen mt-4">
+      <div className="w-full h-full overflow-y-scroll flex flex-col items-center mb-4">
+        <Image alt="logo" src={Logo} />
+        <div className="mt-4">
+          <Input
+            placeholder="Nome Completo"
+            type="text"
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+            className="bg-purple-500 font-bold"
+          />
+        </div>
+        {typeForm === 'donatebussines' && (
+          <div className="mt-2">
+            <Input
+              placeholder="CNPJ"
+              type="text"
+              name="cnpj"
+              value={formData.cnpj}
+              onChange={handleChange}
+              className="bg-purple-500 font-bold"
+            />
+          </div>
+        )}
+        <div className="mt-2">
+          <Input
+            placeholder="CEP"
+            type="text"
+            name="cep"
+            value={formData.cep}
+            onChange={handleChange}
+            className="bg-purple-500 font-bold"
+          />
+        </div>
+        <div className="mt-2">
+          <Input
+            placeholder="Logradouro"
+            type="text"
+            name="address"
+            value={formData.address}
+            onChange={handleChange}
+            className="bg-purple-500 font-bold"
+          />
+        </div>
+        <div className="mt-2">
+          <Input
+            placeholder="Número"
+            type="text"
+            name="number"
+            value={formData.number}
+            onChange={handleChange}
+            className="bg-purple-500 font-bold"
+          />
+        </div>
+        <div className="mt-2">
+          <Input
+            placeholder="Complemento"
+            type="text"
+            name="complement"
+            value={formData.complement}
+            onChange={handleChange}
+            className="bg-purple-500 font-bold"
+          />
+        </div>
+        <div className="mt-2">
+          <Input
+            placeholder="Bairro"
+            type="text"
+            name="district"
+            value={formData.district}
+            onChange={handleChange}
+            className="bg-purple-500 font-bold"
+          />
+        </div>
+        <div className="mt-2">
+          <Input
+            placeholder="Cidade"
+            type="text"
+            name="city"
+            value={formData.city}
+            onChange={handleChange}
+            className="bg-purple-500 font-bold"
+          />
+        </div>
+        <div className="mt-2">
+          <Input
+            placeholder="Estado"
+            type="text"
+            name="state"
+            value={formData.state}
+            onChange={handleChange}
+            className="bg-purple-500 font-bold"
+          />
+        </div>
+        <div className="mt-2">
+          <Input
+            placeholder="Telefone"
+            type="text"
+            name="phone"
+            value={formData.phone}
+            onChange={handleChange}
+            className="bg-purple-500 font-bold"
+          />
+        </div>
+        <div className="mt-2">
+          <Input
+            placeholder="E-mail"
+            type="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            className="bg-purple-500 font-bold"
+          />
+        </div>
+        <div className="mt-2">
+          <Input
+            placeholder="Senha"
+            type="password"
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
+            className="bg-purple-500 font-bold"
+          />
+        </div>
+        <div className="mt-2">
+          <Input
+            placeholder="Confirmar Senha"
+            type="password"
+            name="confirmPassword"
+            value={formData.confirmPassword}
+            onChange={handleChange}
+            className="bg-purple-500 font-bold"
+          />
+        </div>
+        <div className="w-full">
+          <Button
+            variant="bg-purple-600 hover:bg-purple-700 text-white text-xl font-bold rounded-lg mt-4 w-full"
+            title="Cadastrar"
+            onClick={handleSubmit}
+          />
+        </div>
+        {isModalOpen && (
+          <ModalConfirmeCode
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            onConfirm={handleConfirmCode}
+          />
+        )}
       </div>
-      <div className="mt-2">
-        <Input
-          placeholder="CEP"
-          type="text"
-          name="cep"
-          value={formData.cep}
-          onChange={handleChange}
-          className="bg-purple-500 font-bold"
-        />
-      </div>
-      <div className="mt-2">
-        <Input
-          placeholder="Logradouro"
-          type="text"
-          name="address"
-          value={formData.address}
-          onChange={handleChange}
-          className="bg-purple-500 font-bold"
-        />
-      </div>
-      <div className="mt-2">
-        <Input
-          placeholder="Número"
-          type="text"
-          name="number"
-          value={formData.number}
-          onChange={handleChange}
-          className="bg-purple-500 font-bold"
-        />
-      </div>
-      <div className="mt-2">
-        <Input
-          placeholder="Complemento"
-          type="text"
-          name="complement"
-          value={formData.complement}
-          onChange={handleChange}
-          className="bg-purple-500 font-bold"
-        />
-      </div>
-      <div className="mt-2">
-        <Input
-          placeholder="Bairro"
-          type="text"
-          name="district"
-          value={formData.district}
-          onChange={handleChange}
-          className="bg-purple-500 font-bold"
-        />
-      </div>
-      <div className="mt-2 w">
-        <Input
-          placeholder="Cidade"
-          type="text"
-          name="city"
-          value={formData.city}
-          onChange={handleChange}
-          className="bg-purple-500 font-bold"
-        />
-      </div>
-      <div className="mt-2">
-        <Input
-          placeholder="Estado"
-          type="text"
-          name="state"
-          value={formData.state}
-          onChange={handleChange}
-          className="bg-purple-500 font-bold"
-        />
-      </div>
-      <div className="mt-2">
-        <Input
-          placeholder="Telefone"
-          type="text"
-          name="phone"
-          value={formData.phone}
-          onChange={handleChange}
-          className="bg-purple-500 font-bold"
-        />
-      </div>
-      <div className="mt-2">
-        <Input
-          placeholder="E-mail"
-          type="email"
-          name="email"
-          value={formData.email}
-          onChange={handleChange}
-          className="bg-purple-500 font-bold"
-        />
-      </div>
-      <div className="mt-2">
-        <Input
-          placeholder="Senha"
-          type="password"
-          name="password"
-          value={formData.password}
-          onChange={handleChange}
-          className="bg-purple-500 font-bold"
-        />
-      </div>
-      <div className="mt-2">
-        <Input
-          placeholder="Confirmar Senha"
-          type="password"
-          name="confirmPassword"
-          value={formData.confirmPassword}
-          onChange={handleChange}
-          className="bg-purple-500 font-bold"
-        />
-      </div>
-      <div className="w-full">
-        <Button
-          variant="bg-purple-600 hover:bg-purple-700 text-white text-xl font-bold rounded-lg mt-4 w-full"
-          title="Cadastrar"
-          onClick={handleSubmit}
-        />
-      </div>
-      {isModalOpen && (
-        <ModalConfirmeCode
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          onConfirm={handleConfirmCode}
-        />
-      )}
     </main>
   )
 }

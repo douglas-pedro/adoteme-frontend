@@ -24,7 +24,7 @@ export default function Register() {
             <Button
               variant="bg-purple-600 hover:bg-purple-700 text-white text-xl font-bold py-2 px-6 rounded-lg mt-4 w-80"
               title="Quero adotar"
-              onClick={() => router.push('/registerAdopt')}
+              onClick={() => router.push('/registerAdopt?type=adopt')}
             />
           </div>
           <div>
@@ -41,14 +41,14 @@ export default function Register() {
             <Button
               variant="bg-purple-600 hover:bg-purple-700 text-white text-xl font-bold py-2 px-6 rounded-lg mt-4 w-80"
               title="Tenho um canil"
-              onClick={() => router.push('/registerDonateBusiness')}
+              onClick={() => router.push('/registerAdopt?type=donatebussines')}
             />
           </div>
           <div>
             <Button
               variant="bg-purple-600 hover:bg-purple-700 text-white text-xl font-bold py-2 px-6 rounded-lg mt-4 w-80"
               title="Sou pessoa física"
-              onClick={() => router.push('/registerDonateNaturalPerson')}
+              onClick={() => router.push('/registerAdopt?type=donatperson')}
             />
           </div>
         </>

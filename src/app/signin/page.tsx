@@ -1,14 +1,45 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import Logo from '../../../public/img/logo.png'
 import Pet from '../../../public/img/pet.png'
 import Input from '../components/Input'
 import Button from '../components/Button'
+import { signIn } from '../api/signinUser'
+import { useAuth } from '../context/AuthContext'
 
-export default function SignIn() {
+const SignIn = () => {
+  const { setUser, user } = useAuth()
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState<string | null>(null)
   const router = useRouter()
+
+  const handleLogin = async () => {
+    try {
+      const response = await signIn({ username, password })
+
+      if (response.userInfo) {
+        setUser({
+          userId: response.userInfo.userId,
+          email: response.userInfo.email,
+          name: response.userInfo.name,
+          type: response.userInfo.type,
+        })
+        localStorage.setItem('userInfo', JSON.stringify(response.userInfo))
+      }
+
+      if (response.userInfo.type === 'donate') {
+        router.push('/indexDonate')
+      } else {
+        router.push('/indexAdopter')
+      }
+    } catch (err) {
+      setError('Falha no login. Verifique suas credenciais.')
+    }
+  }
 
   return (
     <>
@@ -19,6 +50,8 @@ export default function SignIn() {
             placeholder="Digite seu e-mail"
             type="email"
             className="bg-purple-500 font-bold w-full"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
           />
         </div>
         <div className="mt-6 w-full max-w-xs">
@@ -26,6 +59,8 @@ export default function SignIn() {
             placeholder="Digite sua senha"
             type="password"
             className="bg-purple-500 font-bold w-full"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
           />
         </div>
         <div className="w-full text-end mt-1 max-w-xs">
@@ -40,6 +75,7 @@ export default function SignIn() {
           <Button
             variant="w-full bg-purple-600 hover:bg-purple-700 text-white text-xl font-bold py-2 px-6 rounded-lg"
             title="Login"
+            onClick={handleLogin}
           />
         </div>
         <div className="">
@@ -49,3 +85,5 @@ export default function SignIn() {
     </>
   )
 }
+
+export default SignIn
