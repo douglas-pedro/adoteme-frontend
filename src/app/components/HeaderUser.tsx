@@ -3,12 +3,14 @@
 import React from 'react'
 import Image from 'next/image'
 import user from '../../../public/img/user.png'
+import ButtonLogout from '../components/ButtonLogout'
 
 type HeaderUserProps = {
   userImage: string
   userName: string
   onAddPet: () => void
   onLogout: () => void
+  userType: string
 }
 
 const HeaderUser: React.FC<HeaderUserProps> = ({
@@ -16,6 +18,7 @@ const HeaderUser: React.FC<HeaderUserProps> = ({
   userName,
   onAddPet,
   onLogout,
+  userType,
 }) => {
   return (
     <header className="flex items-center justify-between p-4 bg-purple-700 text-white rounded-lg">
@@ -36,20 +39,16 @@ const HeaderUser: React.FC<HeaderUserProps> = ({
 
       {/* Action Buttons */}
       <div className="flex space-x-4">
-        <button
-          onClick={onAddPet}
-          className="w-10 h-10 rounded-full bg-purple-900 hover:bg-purple-800 flex items-center justify-center"
-          title="Adicionar novo pet"
-        >
-          <span className="text-xl">+</span>
-        </button>
-        <button
-          onClick={onLogout}
-          className="w-10 h-10 rounded-full bg-purple-900 hover:bg-purple-800 flex items-center justify-center"
-          title="Deslogar"
-        >
-          <span className="text-xl">🔓</span>
-        </button>
+        {userType !== 'adopter' && (
+          <button
+            onClick={onAddPet}
+            className="w-10 h-10 rounded-full bg-purple-900 hover:bg-purple-800 flex items-center justify-center"
+            title="Adicionar novo pet"
+          >
+            <span className="text-xl">+</span>
+          </button>
+        )}
+        <ButtonLogout />
       </div>
     </header>
   )

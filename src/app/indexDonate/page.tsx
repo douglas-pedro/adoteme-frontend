@@ -6,10 +6,16 @@ import { useAuth } from '../context/AuthContext'
 import HeaderUser from '../components/HeaderUser'
 import ListPetsUser from '../components/ListPetsUser'
 
+type UserInfo = {
+  userId: string
+  name: string
+  email: string
+}
+
 export default function IndexAdopter() {
   // const { user } = useAuth()
   const router = useRouter()
-  const [user, setUser] = useState(null)
+  const [user, setUser] = useState<UserInfo | null>(null)
 
   useEffect(() => {
     const storedUser = localStorage.getItem('userInfo')
@@ -33,14 +39,19 @@ export default function IndexAdopter() {
   }
 
   return (
-    <>
+    <div>
       <HeaderUser
         userName={user?.name || ''}
         userImage={''}
         onAddPet={handleAddPet}
         onLogout={handleLogout}
       />
-      <ListPetsUser idCognito={String(user?.userId)} />
-    </>
+      {/* Envolva ListPetsUser em uma div com scroll */}
+      <div className="overflow-y-scroll h-[600px] mt-4">
+        {' '}
+        {/* Você pode ajustar a altura conforme necessário */}
+        <ListPetsUser idCognito={String(user?.userId)} />
+      </div>
+    </div>
   )
 }

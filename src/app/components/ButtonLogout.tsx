@@ -18,9 +18,10 @@ const LogoutButton = () => {
   return (
     <button
       onClick={handleLogout}
-      className="bg-red-500 text-white py-2 px-4 rounded"
+      className="w-10 h-10 rounded-full bg-purple-900 hover:bg-purple-800 flex items-center justify-center"
+      title="Deslogar"
     >
-      Logout
+      <span className="text-xl">🔓</span>
     </button>
   )
 }
