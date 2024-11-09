@@ -22,6 +22,21 @@ export default function ListPetsUser({ idCognito }: { idCognito: string }) {
             }),
           })
 
+          const requestDonate = await fetch(
+            `http://localhost:4000/dev/pets/adoption-requests`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                ownerId: idCognito,
+              }),
+            },
+          )
+
+          console.log(requestDonate)
+
           if (!res.ok) {
             throw new Error('Erro ao buscar dados do pet')
           }

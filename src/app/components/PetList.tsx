@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
+import ModalPetAdopter from '../components/ModalPetAdopter'
 
 interface Pet {
   id: number
@@ -20,7 +21,17 @@ interface Pet {
     idCognito: string
     [key: string]: any
   }
+  name: string
   [key: string]: any
+  adoptionRequests: [
+    {
+      id: number
+      petId: number
+      requesterId: string
+      status: string
+      createdAt: string
+    },
+  ]
 }
 
 const PetList: React.FC = () => {
@@ -28,6 +39,9 @@ const PetList: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false)
   const [cursor, setCursor] = useState<number | null>(null)
   const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [idUser, setIdUser] = useState<string | null>(null)
+  const [idPet, setIdPet] = useState<number | null>(null)
 
   const [filters, setFilters] = useState({
     type: '',
@@ -102,6 +116,18 @@ const PetList: React.FC = () => {
     setFilters(initialFilters)
     setCursor(null)
     fetchPets(initialFilters, false, null)
+  }
+
+  const handleAdopt = (userId: string, petId: number) => {
+    setIdUser(userId)
+    setIdPet(petId)
+    setIsModalOpen(true)
+  }
+
+  const closeModal = () => {
+    setIsModalOpen(false)
+    setIdUser(null)
+    setIdPet(null)
   }
 
   return (
@@ -214,10 +240,9 @@ const PetList: React.FC = () => {
               <p>Nenhum pet encontrado.</p>
             ) : (
               pets.map((pet) => (
-                <a
-                  href="#"
+                <div
                   key={pet.id}
-                  className="flex items-center bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700 mb-4"
+                  className="flex items-center bg-gray-800 rounded-lg shadow mb-4"
                 >
                   <div className="ml-2">
                     <Image
@@ -232,6 +257,11 @@ const PetList: React.FC = () => {
                     <h5 className="text-lg font-bold tracking-tight text-gray-900 dark:text-white">
                       {pet.name}
                     </h5>
+                    <p>
+                      {pet?.adoptionRequests[0]?.status === 'PENDING'
+                        ? 'Solicitado Adoção'
+                        : ''}
+                    </p>
                     <p className="text-[12px] text-gray-700 dark:text-gray-400">
                       Idade: {pet.age} anos
                     </p>
@@ -244,8 +274,14 @@ const PetList: React.FC = () => {
                     <p className="text-[12px] font-normal text-gray-700 dark:text-gray-400">
                       {pet.gender}
                     </p>
+                    <button
+                      onClick={() => handleAdopt(pet.userPet.idCognito, pet.id)}
+                      className="mt-2 w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded focus:outline-none"
+                    >
+                      Adotar
+                    </button>
                   </div>
-                </a>
+                </div>
               ))
             )}
           </div>
@@ -268,6 +304,16 @@ const PetList: React.FC = () => {
             </div>
           )}
         </div>
+      )}
+
+      {/* Modal de Adoção */}
+      {isModalOpen && (
+        <ModalPetAdopter
+          isOpen={isModalOpen}
+          idUser={String(idUser)}
+          idPet={String(idPet)}
+          onClose={closeModal}
+        />
       )}
     </div>
   )
