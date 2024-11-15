@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Poppins } from 'next/font/google'
 import './globals.css'
 import { AuthProvider } from './context/AuthContext'
+import { AlertProvider } from './context/AlertContext' // Importa o AlertProvider
 
 const poppins = Poppins({ subsets: ['latin'], weight: ['400', '600', '700'] })
 
@@ -21,11 +22,15 @@ export default function RootLayout({
         className={`${poppins.className} bg-purple-500 text-white overflow-hidden`}
       >
         <AuthProvider>
-          <div className="min-h-screen h-screen flex flex-col justify-center items-center p-4">
-            <main className="flex-1 w-full max-w-lg mx-auto p-4">
-              {children}
-            </main>
-          </div>
+          <AlertProvider>
+            {' '}
+            {/* Envolve o layout com o AlertProvider */}
+            <div className="min-h-screen h-screen flex flex-col justify-center items-center p-4">
+              <main className="flex-1 w-full max-w-lg mx-auto p-4">
+                {children}
+              </main>
+            </div>
+          </AlertProvider>
         </AuthProvider>
       </body>
     </html>

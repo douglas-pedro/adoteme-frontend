@@ -9,6 +9,7 @@ import Input from '../components/Input'
 import Button from '../components/Button'
 import { signIn } from '../api/signinUser'
 import { useAuth } from '../context/AuthContext'
+import { useAlert } from '../context/AlertContext'
 
 const SignIn = () => {
   const { setUser, user } = useAuth()
@@ -16,6 +17,7 @@ const SignIn = () => {
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
+  const { showAlert } = useAlert()
 
   const handleLogin = async () => {
     try {
@@ -29,6 +31,7 @@ const SignIn = () => {
           type: response.userInfo.type,
         })
         localStorage.setItem('userInfo', JSON.stringify(response.userInfo))
+        showAlert('success', 'Login efetuado com sucesso!')
       }
 
       if (response.userInfo.type === 'donate') {
@@ -37,6 +40,7 @@ const SignIn = () => {
         router.push('/indexAdopter')
       }
     } catch (err) {
+      showAlert('error', 'Erro ao tentar efetuar o login!')
       setError('Falha no login. Verifique suas credenciais.')
     }
   }

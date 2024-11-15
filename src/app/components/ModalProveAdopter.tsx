@@ -4,32 +4,34 @@ import React from 'react'
 import { useAlert } from '../context/AlertContext'
 
 interface ModalAdoptionProps {
-  idUser: string
-  idPet: string
+  requestId: number
+  ownerId: string
   isOpen: boolean
   onClose: () => void
   onAdoptionSuccess: () => void
 }
 
-const ModalAdoption: React.FC<ModalAdoptionProps> = ({
-  idUser,
-  idPet,
+const ModalApproveAdoption: React.FC<ModalAdoptionProps> = ({
+  requestId,
+  ownerId,
   isOpen,
   onClose,
   onAdoptionSuccess,
 }) => {
   const { showAlert } = useAlert()
 
+  console.log(requestId, ownerId)
+
   const handleAdopt = async () => {
     try {
       const response = await fetch(
-        `http://localhost:4000/dev/pets/${idPet}/adoption-requests`,
+        `http://localhost:4000/dev/adoption-requests/${requestId}/approve `,
         {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ requesterId: idUser }),
+          body: JSON.stringify({ ownerId }),
         },
       )
 
@@ -41,14 +43,14 @@ const ModalAdoption: React.FC<ModalAdoptionProps> = ({
       console.log('Resposta da adoção:', data)
 
       // Exibe o alerta de sucesso
-      showAlert('success', 'Adoção realizada com sucesso!')
+      showAlert('success', 'Adoção aprovada com sucesso!')
       onAdoptionSuccess()
       onClose()
     } catch (error) {
       console.error('Erro ao adotar:', error)
 
       // Exibe o alerta de erro
-      showAlert('error', 'Erro ao adotar. Por favor, tente novamente.')
+      showAlert('error', 'Erro ao aprovar adoção. Por favor, tente novamente.')
     }
   }
 
@@ -89,8 +91,8 @@ const ModalAdoption: React.FC<ModalAdoptionProps> = ({
               </h3>
               <div className="mt-2">
                 <p className="text-sm text-gray-500">
-                  Tem certeza de que deseja adotar este pet? Esta ação não pode
-                  ser desfeita.
+                  Tem certeja que deseja aprovar a adoção deste pet para este
+                  adotante ?
                 </p>
               </div>
             </div>
@@ -102,7 +104,7 @@ const ModalAdoption: React.FC<ModalAdoptionProps> = ({
             onClick={handleAdopt}
             className="inline-flex w-full justify-center rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-500 sm:ml-3 sm:w-auto"
           >
-            Adotar
+            Aprovar
           </button>
           <button
             type="button"
@@ -117,4 +119,4 @@ const ModalAdoption: React.FC<ModalAdoptionProps> = ({
   )
 }
 
-export default ModalAdoption
+export default ModalApproveAdoption

@@ -1,6 +1,10 @@
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import ModalPetAdopter from '../components/ModalPetAdopter'
+import ModalPetAdopterRemove from '../components/ModalPetAdopterRemove'
+import IconLike from '../../../public/img/like.png'
+import IconActive from '../../../public/img/like_active.png'
+import LoadingPet from '../../../public/img/loading_pet.gif'
 
 interface Pet {
   id: number
@@ -12,6 +16,7 @@ interface Pet {
     state: string
     [key: string]: any
   }
+  like: number
   images: {
     id: number
     path: string
@@ -22,16 +27,19 @@ interface Pet {
     [key: string]: any
   }
   name: string
-  [key: string]: any
-  adoptionRequests: [
-    {
-      id: number
-      petId: number
-      requesterId: string
-      status: string
-      createdAt: string
-    },
-  ]
+  adoptionRequests: {
+    id: number
+    petId: number
+    requesterId: string
+    status: string
+    createdAt: string
+  }[]
+  likes: {
+    id: number
+    idCognito: string
+    petId: number
+    createdAt: string
+  }[]
 }
 
 type UserInfo = {
@@ -46,8 +54,10 @@ const PetList: React.FC = () => {
   const [cursor, setCursor] = useState<number | null>(null)
   const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isModalRemoveOpen, setIsModalRemoveOpen] = useState(false)
   const [user, setUser] = useState<UserInfo | null>(null)
   const [idPet, setIdPet] = useState<number | null>(null)
+  const [idAdopter, setIdAdopter] = useState<number | null>(null)
 
   const [filters, setFilters] = useState({
     type: '',
@@ -87,6 +97,58 @@ const PetList: React.FC = () => {
     }
   }
 
+  const LikePet = async (idCognito: string, petId: number) => {
+    try {
+      const response = await fetch('http://localhost:4000/dev/pets/like', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          idCognito,
+          petId,
+        }),
+      })
+      const data = await response.json()
+      return data.newLikeCount
+    } catch (error) {
+      console.error('Erro ao dar like no pet:', error)
+    }
+  }
+
+  const handleLikePet = async (pet: Pet) => {
+    if (user) {
+      setPets((prevPets) =>
+        prevPets.map((p) =>
+          p.id === pet.id
+            ? {
+                ...p,
+                like: p.likes.some((like) => like.idCognito === user.userId)
+                  ? p.like - 1
+                  : p.like + 1,
+                likes: p.likes.some((like) => like.idCognito === user.userId)
+                  ? p.likes.filter((like) => like.idCognito !== user.userId)
+                  : [
+                      ...p.likes,
+                      {
+                        id: Date.now(),
+                        idCognito: user.userId,
+                        petId: pet.id,
+                        createdAt: new Date().toISOString(),
+                      },
+                    ],
+              }
+            : p,
+        ),
+      )
+
+      try {
+        await LikePet(user.userId, pet.id)
+        fetchPets(filters, false, null)
+      } catch (error) {
+        console.error('Erro ao sincronizar o like:', error)
+      }
+    }
+  }
+
   useEffect(() => {
     fetchPets(filters)
   }, [])
@@ -119,7 +181,6 @@ const PetList: React.FC = () => {
 
   const handleFilterApply = () => {
     setCursor(null)
-
     fetchPets(filters, false, null)
     setIsFilterOpen(false)
   }
@@ -141,11 +202,23 @@ const PetList: React.FC = () => {
     setIdPet(null)
   }
 
+  const handleAdoptRemove = (id: number) => {
+    setIdAdopter(id)
+    setIsModalRemoveOpen(true)
+  }
+
+  const closeRemoveModal = () => {
+    setIsModalRemoveOpen(false)
+    setIdAdopter(null)
+  }
+
+  const handleAdoptionSuccess = () => {
+    fetchPets(filters, false, null)
+  }
+
   return (
     <div className="p-4">
       <h1 className="text-1xl font-bold mb-4">Pets para Adoção</h1>
-
-      {/* Botão suspenso de Filtro */}
       <div className="relative inline-block text-left mb-4">
         <button
           onClick={toggleFilterMenu}
@@ -238,7 +311,6 @@ const PetList: React.FC = () => {
         )}
       </div>
 
-      {/* Spinner enquanto filtra ou carrega pets */}
       {loading && pets.length === 0 ? (
         <div className="flex justify-center mt-4">
           <div className="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12"></div>
@@ -271,10 +343,25 @@ const PetList: React.FC = () => {
                       />
                     </div>
 
-                    {/* Informações do Pet */}
                     <div className="w-2/3 ml-4">
-                      <h5 className="text-lg font-bold tracking-tight text-gray-900 dark:text-white">
-                        {pet.name}
+                      <h5 className="flex justify-between items-center text-lg font-bold tracking-tight text-gray-900 dark:text-white mb-2">
+                        <span>{pet.name}</span>
+                        <span className="flex items-center space-x-1">
+                          <span className="mr-2">{pet.like}</span>
+                          <a onClick={() => handleLikePet(pet)}>
+                            {pet.likes.some(
+                              (like) => like.idCognito === user?.userId,
+                            ) ? (
+                              <Image
+                                src={IconActive}
+                                width={30}
+                                alt="liked pet"
+                              />
+                            ) : (
+                              <Image src={IconLike} width={30} alt="like pet" />
+                            )}
+                          </a>
+                        </span>
                       </h5>
                       <p className="text-sm">
                         {pet?.adoptionRequests[0]?.status === 'PENDING'
@@ -296,14 +383,44 @@ const PetList: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Botão Adotar */}
                   <div className="p-2">
-                    <button
-                      onClick={() => handleAdopt(pet.userPet.idCognito, pet.id)}
-                      className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg focus:outline-none"
-                    >
-                      Adotar
-                    </button>
+                    {(() => {
+                      // Busca a solicitação de adoção para o usuário atual
+                      const adoptionRequest = pet?.adoptionRequests.find(
+                        (request) => request.requesterId === user?.userId,
+                      )
+
+                      return adoptionRequest ? (
+                        <>
+                          <p className="text-sm text-green-300 text-center flex justify-center font-bold">
+                            <Image
+                              src={LoadingPet}
+                              alt="loading pet"
+                              width={40}
+                            />
+                            Você já solicitou adoção para este pet. Aguarde o
+                            contato do doador.
+                          </p>
+                          <button
+                            onClick={() =>
+                              handleAdoptRemove(adoptionRequest.id)
+                            }
+                            className="w-full text-white font-semibold py-2 px-4 rounded-lg focus:outline-none mt-2 bg-red-500 hover:bg-red-600"
+                          >
+                            Cancelar Adoção
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          onClick={() =>
+                            handleAdopt(pet.userPet.idCognito, pet.id)
+                          }
+                          className="w-full text-white font-semibold py-2 px-4 rounded-lg focus:outline-none mt-2 bg-green-500 hover:bg-green-600"
+                        >
+                          Adotar
+                        </button>
+                      )
+                    })()}
                   </div>
                 </div>
               ))
@@ -330,13 +447,21 @@ const PetList: React.FC = () => {
         </div>
       )}
 
-      {/* Modal de Adoção */}
       {isModalOpen && (
         <ModalPetAdopter
           isOpen={isModalOpen}
           idUser={String(user?.userId)}
           idPet={String(idPet)}
           onClose={closeModal}
+          onAdoptionSuccess={handleAdoptionSuccess}
+        />
+      )}
+      {isModalRemoveOpen && (
+        <ModalPetAdopterRemove
+          isOpen={isModalRemoveOpen}
+          id={Number(idAdopter)}
+          onClose={closeRemoveModal}
+          onAdoptionRemoveSuccess={handleAdoptionSuccess}
         />
       )}
     </div>

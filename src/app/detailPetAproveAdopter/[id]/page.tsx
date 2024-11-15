@@ -62,7 +62,6 @@ export default function DetailPetAproveAdopter({
       <p className="mt-2 font-bold" onClick={() => router.back()}>
         {' '}
         {'< Voltar'}
-        {id}
       </p>
       <CardPet data={pets} />
     </div>

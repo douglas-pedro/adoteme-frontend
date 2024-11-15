@@ -1,6 +1,8 @@
 import React from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
+import IconLike from '../../../public/img/like.png'
+import IconActive from '../../../public/img/like_active.png'
 
 type Address = {
   zipCode: string
@@ -32,6 +34,7 @@ type Pet = {
   type: string
   gender: string
   age: number
+  like: number
   special_condition: string
   address: Address
   images: ImageObj[]
@@ -56,8 +59,24 @@ const PetCardList: React.FC<{ pet: Pet }> = ({ pet }) => {
               : 'w-24 h-24 object-cover rounded-lg border-4 border-purple-500'
           }
         />
-        <div className="ml-4">
-          <h2 className="text-sm font-bold">{pet.name}</h2>
+        <div className="w-2/3 ml-4">
+          <h2 className="text-sm font-bold flex justify-between items-center">
+            {pet.name}
+            {pet.like > 0 ? (
+              <p className="flex items-center">
+                <span>{pet.like}</span>
+                <Image
+                  src={IconActive}
+                  width={30}
+                  alt="liked pet"
+                  className="ml-2"
+                />
+              </p>
+            ) : (
+              <Image src={IconLike} width={30} alt="like pet" />
+            )}
+          </h2>
+
           <p className="text-sm ">Tipo: {pet.type}</p>
           <p className="text-sm ">Idade: {pet.age} anos</p>
           <p className="text-sm ">Patologia: {pet.special_condition}</p>
@@ -67,8 +86,8 @@ const PetCardList: React.FC<{ pet: Pet }> = ({ pet }) => {
 
       {pet.adoptionRequests.length > 0 && (
         <div className="mt-4 flex justify-center">
-          <button className="w-full px-4 py-2 bg-green-500 text-white font-bold rounded-lg hover:bg-green-600">
-            Solicitações de Doação
+          <button className="w-full px-4 py-2 bg-green-500 text-white text-sm font-bold rounded-lg hover:bg-green-600">
+            Solicitações de Doação em Aberto
           </button>
         </div>
       )}

@@ -1,54 +1,44 @@
-'use client'
-
 import React from 'react'
 import { useAlert } from '../context/AlertContext'
 
 interface ModalAdoptionProps {
-  idUser: string
-  idPet: string
+  id: number
   isOpen: boolean
   onClose: () => void
-  onAdoptionSuccess: () => void
+  onAdoptionRemoveSuccess: () => void
 }
 
-const ModalAdoption: React.FC<ModalAdoptionProps> = ({
-  idUser,
-  idPet,
+const ModalAdoptionRemove: React.FC<ModalAdoptionProps> = ({
+  id,
   isOpen,
   onClose,
-  onAdoptionSuccess,
+  onAdoptionRemoveSuccess,
 }) => {
   const { showAlert } = useAlert()
 
-  const handleAdopt = async () => {
+  const handleAdoptRemove = async () => {
     try {
       const response = await fetch(
-        `http://localhost:4000/dev/pets/${idPet}/adoption-requests`,
+        `http://localhost:4000/dev/pets/remove-request/${id}`,
         {
-          method: 'POST',
+          method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ requesterId: idUser }),
         },
       )
 
       if (!response.ok) {
-        throw new Error('Erro ao realizar adoção')
+        throw new Error('Erro ao cancelar a requisição de adoção')
       }
 
-      const data = await response.json()
-      console.log('Resposta da adoção:', data)
+      showAlert('success', 'Adoção cancelada com sucesso!')
+      onAdoptionRemoveSuccess()
 
-      // Exibe o alerta de sucesso
-      showAlert('success', 'Adoção realizada com sucesso!')
-      onAdoptionSuccess()
       onClose()
     } catch (error) {
       console.error('Erro ao adotar:', error)
-
-      // Exibe o alerta de erro
-      showAlert('error', 'Erro ao adotar. Por favor, tente novamente.')
+      alert('Erro ao adotar. Por favor, tente novamente.')
     }
   }
 
@@ -85,12 +75,12 @@ const ModalAdoption: React.FC<ModalAdoptionProps> = ({
                 className="text-lg leading-6 font-medium text-gray-900"
                 id="modal-title"
               >
-                Confirmar Adoção
+                Cancelar Adoção
               </h3>
               <div className="mt-2">
                 <p className="text-sm text-gray-500">
-                  Tem certeza de que deseja adotar este pet? Esta ação não pode
-                  ser desfeita.
+                  Tem certeza de que deseja cancelar a solicitação de adoção
+                  este pet ?
                 </p>
               </div>
             </div>
@@ -99,17 +89,17 @@ const ModalAdoption: React.FC<ModalAdoptionProps> = ({
         <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
           <button
             type="button"
-            onClick={handleAdopt}
+            onClick={handleAdoptRemove}
             className="inline-flex w-full justify-center rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-500 sm:ml-3 sm:w-auto"
           >
-            Adotar
+            Cancelar Adoção
           </button>
           <button
             type="button"
             onClick={onClose}
             className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
           >
-            Cancelar
+            Fechar
           </button>
         </div>
       </div>
@@ -117,4 +107,4 @@ const ModalAdoption: React.FC<ModalAdoptionProps> = ({
   )
 }
 
-export default ModalAdoption
+export default ModalAdoptionRemove

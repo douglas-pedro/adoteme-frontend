@@ -2,15 +2,19 @@
 
 import { useRouter } from 'next/navigation'
 import { logout } from '../api/signupUser'
+import { useAlert } from '../context/AlertContext'
 
 const LogoutButton = () => {
   const router = useRouter()
+  const { showAlert } = useAlert()
 
   const handleLogout = async () => {
     try {
       await logout()
+      showAlert('success', 'Usuário desconectado com sucesso!')
       router.push('/signin')
     } catch (error) {
+      showAlert('error', 'Erro ao tentar desconectar o usuário!')
       console.error('Erro ao fazer logout:', error)
     }
   }
