@@ -2,47 +2,33 @@
 
 import { useEffect, useState } from 'react'
 import PetCardList from './PetListCards'
+import { useAuth } from '../context/AuthContext'
 
-export default function ListPetsUser({ idCognito }: { idCognito: string }) {
+export default function ListPetsUser() {
+  const { user } = useAuth()
   const [pets, setPets] = useState<any[]>([])
 
   useEffect(() => {
     const fetchPetData = async () => {
       try {
-        if (idCognito) {
+        if (user?.userId) {
           const res = await fetch(`http://localhost:4000/dev/get-pets`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              idCognito,
+              idCognito: user.userId,
               limit: 10,
               cursor: null,
             }),
           })
-
-          const requestDonate = await fetch(
-            `http://localhost:4000/dev/pets/adoption-requests`,
-            {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                ownerId: idCognito,
-              }),
-            },
-          )
-
-          console.log(requestDonate)
 
           if (!res.ok) {
             throw new Error('Erro ao buscar dados do pet')
           }
 
           const petData = await res.json()
-          console.log('Dados do pet:', petData)
           setPets(petData.items)
         }
       } catch (error) {
@@ -51,7 +37,7 @@ export default function ListPetsUser({ idCognito }: { idCognito: string }) {
     }
 
     fetchPetData()
-  }, [idCognito])
+  }, [user?.userId])
 
   useEffect(() => {
     console.log('Estado atualizado de pets:', pets)

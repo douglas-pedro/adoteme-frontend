@@ -34,13 +34,19 @@ interface Pet {
   ]
 }
 
+type UserInfo = {
+  userId: string
+  name: string
+  email: string
+}
+
 const PetList: React.FC = () => {
   const [pets, setPets] = useState<Pet[]>([])
   const [loading, setLoading] = useState<boolean>(false)
   const [cursor, setCursor] = useState<number | null>(null)
   const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false)
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [idUser, setIdUser] = useState<string | null>(null)
+  const [user, setUser] = useState<UserInfo | null>(null)
   const [idPet, setIdPet] = useState<number | null>(null)
 
   const [filters, setFilters] = useState({
@@ -104,6 +110,13 @@ const PetList: React.FC = () => {
     })
   }
 
+  useEffect(() => {
+    const storedUser = localStorage.getItem('userInfo')
+    if (storedUser) {
+      setUser(JSON.parse(storedUser))
+    }
+  }, [])
+
   const handleFilterApply = () => {
     setCursor(null)
 
@@ -119,14 +132,12 @@ const PetList: React.FC = () => {
   }
 
   const handleAdopt = (userId: string, petId: number) => {
-    setIdUser(userId)
     setIdPet(petId)
     setIsModalOpen(true)
   }
 
   const closeModal = () => {
     setIsModalOpen(false)
-    setIdUser(null)
     setIdPet(null)
   }
 
@@ -242,41 +253,54 @@ const PetList: React.FC = () => {
               pets.map((pet) => (
                 <div
                   key={pet.id}
-                  className="flex items-center bg-gray-800 rounded-lg shadow mb-4"
+                  className="flex flex-col bg-gray-800 rounded-lg shadow mb-4"
                 >
-                  <div className="ml-2">
-                    <Image
-                      className="object-cover border-4 border-white rounded-lg"
-                      src={pet.images[0]?.path || '/default-image.jpg'}
-                      alt={`Pet ${pet.id}`}
-                      width={200}
-                      height={200}
-                    />
+                  <div className="flex items-center p-4">
+                    {/* Imagem do Pet */}
+                    <div className="w-1/3">
+                      <Image
+                        className={
+                          pet?.adoptionRequests[0]
+                            ? 'object-cover border-4 border-purple-800 rounded-lg'
+                            : 'object-cover border-4 border-green-500 rounded-lg'
+                        }
+                        src={pet.images[0]?.path || '/default-image.jpg'}
+                        alt={`Pet ${pet.id}`}
+                        width={200}
+                        height={200}
+                      />
+                    </div>
+
+                    {/* Informações do Pet */}
+                    <div className="w-2/3 ml-4">
+                      <h5 className="text-lg font-bold tracking-tight text-gray-900 dark:text-white">
+                        {pet.name}
+                      </h5>
+                      <p className="text-sm">
+                        {pet?.adoptionRequests[0]?.status === 'PENDING'
+                          ? `Solicitado Adoção (${pet?.adoptionRequests.length})`
+                          : ''}
+                      </p>
+                      <p className="text-sm text-white">
+                        Idade: {pet.age} anos
+                      </p>
+                      <p className="text-sm font-normal text-white">
+                        Condição Especial: {pet.special_condition || 'Nenhuma'}
+                      </p>
+                      <p className="text-sm font-normal text-white">
+                        Estado: {pet.address.state}
+                      </p>
+                      <p className="text-sm font-normal text-white">
+                        Sexo: {pet.gender}
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex flex-col justify-between p-4 leading-normal w-full">
-                    <h5 className="text-lg font-bold tracking-tight text-gray-900 dark:text-white">
-                      {pet.name}
-                    </h5>
-                    <p>
-                      {pet?.adoptionRequests[0]?.status === 'PENDING'
-                        ? 'Solicitado Adoção'
-                        : ''}
-                    </p>
-                    <p className="text-[12px] text-gray-700 dark:text-gray-400">
-                      Idade: {pet.age} anos
-                    </p>
-                    <p className="text-[12px] font-normal text-gray-700 dark:text-gray-400">
-                      Condição Especial: {pet.special_condition || 'Nenhuma'}
-                    </p>
-                    <p className="text-[12px] font-normal text-gray-700 dark:text-gray-400">
-                      Estado: {pet.address.state}
-                    </p>
-                    <p className="text-[12px] font-normal text-gray-700 dark:text-gray-400">
-                      {pet.gender}
-                    </p>
+
+                  {/* Botão Adotar */}
+                  <div className="p-2">
                     <button
                       onClick={() => handleAdopt(pet.userPet.idCognito, pet.id)}
-                      className="mt-2 w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded focus:outline-none"
+                      className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg focus:outline-none"
                     >
                       Adotar
                     </button>
@@ -310,7 +334,7 @@ const PetList: React.FC = () => {
       {isModalOpen && (
         <ModalPetAdopter
           isOpen={isModalOpen}
-          idUser={String(idUser)}
+          idUser={String(user?.userId)}
           idPet={String(idPet)}
           onClose={closeModal}
         />

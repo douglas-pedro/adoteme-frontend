@@ -14,6 +14,10 @@ interface RegisterAdotProps {
 }
 
 export default function RegisterAdot({ type }: RegisterAdotProps) {
+  const searchParams = useSearchParams()
+  const typeForm = searchParams.get('type')
+  console.log(typeForm)
+
   const [formData, setFormData] = useState<CreateUserPayload>({
     username: '',
     name: '',
@@ -30,13 +34,11 @@ export default function RegisterAdot({ type }: RegisterAdotProps) {
     phone: '',
     responsibleName: '',
     state: '',
-    type,
+    type: typeForm || '',
     cnpj: '', // Adicionar cnpj aqui
   })
   const [idUser, setIdUser] = useState<string | null>(null)
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false)
-  const searchParams = useSearchParams()
-  const typeForm = searchParams.get('type')
   const router = useRouter()
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -91,6 +93,7 @@ export default function RegisterAdot({ type }: RegisterAdotProps) {
         const result = await response.json()
         console.log('User confirmed successfully:', result)
         setIsModalOpen(false)
+        router.push('/signin')
       } else {
         throw new Error('Failed to confirm code')
       }
